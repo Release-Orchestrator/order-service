@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -44,7 +45,11 @@ func (c *userServiceClient) ValidateUser(ctx context.Context, userID uuid.UUID) 
 	if err != nil {
 		return false, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			log.Printf("warning: failed to close response body: %v", cerr)
+		}
+	}()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return false, nil
