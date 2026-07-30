@@ -1,0 +1,6 @@
+.git/
+.gitignore
+*.md
+bin/
+order-service
+order-service.exe

@@ -11,11 +11,13 @@ import (
 	"github.com/google/uuid"
 )
 
+// PaymentResult contains the result from processing a payment.
 type PaymentResult struct {
 	PaymentID uuid.UUID `json:"paymentId"`
 	Status    string    `json:"status"`
 }
 
+// PaymentServiceClient defines operations for communicating with the payment service.
 type PaymentServiceClient interface {
 	ProcessPayment(ctx context.Context, orderID uuid.UUID, amount float64) (*PaymentResult, error)
 }
@@ -25,6 +27,7 @@ type paymentServiceClient struct {
 	http    *http.Client
 }
 
+// NewPaymentServiceClient creates a new PaymentServiceClient.
 func NewPaymentServiceClient(baseURL string) PaymentServiceClient {
 	return &paymentServiceClient{
 		baseURL: baseURL,
@@ -34,6 +37,7 @@ func NewPaymentServiceClient(baseURL string) PaymentServiceClient {
 	}
 }
 
+// ProcessPayment sends a payment request to the payment service.
 func (c *paymentServiceClient) ProcessPayment(ctx context.Context, orderID uuid.UUID, amount float64) (*PaymentResult, error) {
 	url := fmt.Sprintf("%s/internal/payments", c.baseURL)
 

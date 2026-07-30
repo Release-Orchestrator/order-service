@@ -1,3 +1,4 @@
+// Package repository provides persistence access for orders.
 package repository
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// OrderRepositoryInterface defines repository operations for orders.
 type OrderRepositoryInterface interface {
 	Create(ctx context.Context, order *model.Order) error
 	GetByID(ctx context.Context, id uuid.UUID) (*model.Order, error)
@@ -17,14 +19,17 @@ type OrderRepositoryInterface interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status string, paymentID *uuid.UUID) error
 }
 
+// OrderRepository implements OrderRepositoryInterface using a pgx pool.
 type OrderRepository struct {
 	db *pgxpool.Pool
 }
 
+// NewOrderRepository creates a new OrderRepository.
 func NewOrderRepository(db *pgxpool.Pool) *OrderRepository {
 	return &OrderRepository{db: db}
 }
 
+// Create inserts an order into the database.
 func (r *OrderRepository) Create(ctx context.Context, order *model.Order) error {
 	query := `
 		INSERT INTO orders (id, user_id, product_name, amount, status, payment_id, created_at, updated_at)
@@ -35,6 +40,7 @@ func (r *OrderRepository) Create(ctx context.Context, order *model.Order) error 
 	return err
 }
 
+// GetByID fetches an order by ID.
 func (r *OrderRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Order, error) {
 	query := `SELECT id, user_id, product_name, amount, status, payment_id, created_at, updated_at FROM orders WHERE id = $1`
 	row := r.db.QueryRow(ctx, query, id)
@@ -50,6 +56,7 @@ func (r *OrderRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Ord
 	return &o, nil
 }
 
+// List returns orders optionally filtered by userID.
 func (r *OrderRepository) List(ctx context.Context, userID *uuid.UUID) ([]*model.Order, error) {
 	query := `SELECT id, user_id, product_name, amount, status, payment_id, created_at, updated_at FROM orders`
 	var args []interface{}
@@ -76,6 +83,7 @@ func (r *OrderRepository) List(ctx context.Context, userID *uuid.UUID) ([]*model
 	return orders, rows.Err()
 }
 
+// UpdateStatus updates an order's status and optionally sets payment_id.
 func (r *OrderRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status string, paymentID *uuid.UUID) error {
 	query := `UPDATE orders SET status = $1, payment_id = COALESCE($2, payment_id), updated_at = NOW() WHERE id = $3`
 	_, err := r.db.Exec(ctx, query, status, paymentID, id)

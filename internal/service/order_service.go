@@ -1,3 +1,4 @@
+// Package service implements business logic for orders.
 package service
 
 import (
@@ -12,12 +13,17 @@ import (
 )
 
 var (
-	ErrOrderNotFound  = errors.New("order not found")
-	ErrInvalidInput   = errors.New("invalid input")
-	ErrUserNotFound   = errors.New("user not found")
-	ErrPaymentFailed  = errors.New("payment failed")
+	// ErrOrderNotFound is returned when an order cannot be found.
+	ErrOrderNotFound = errors.New("order not found")
+	// ErrInvalidInput is returned when input validation fails.
+	ErrInvalidInput = errors.New("invalid input")
+	// ErrUserNotFound is returned when the user does not exist.
+	ErrUserNotFound = errors.New("user not found")
+	// ErrPaymentFailed is returned when payment processing fails.
+	ErrPaymentFailed = errors.New("payment failed")
 )
 
+// OrderServiceInterface describes service operations for orders.
 type OrderServiceInterface interface {
 	Create(ctx context.Context, req *model.CreateOrderRequest) (*model.Order, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*model.Order, error)
@@ -25,12 +31,14 @@ type OrderServiceInterface interface {
 	Cancel(ctx context.Context, id uuid.UUID) error
 }
 
+// OrderService implements OrderServiceInterface.
 type OrderService struct {
 	repo          repository.OrderRepositoryInterface
 	userClient    client.UserServiceClient
 	paymentClient client.PaymentServiceClient
 }
 
+// NewOrderService creates a new OrderService.
 func NewOrderService(
 	repo repository.OrderRepositoryInterface,
 	userClient client.UserServiceClient,
@@ -43,6 +51,7 @@ func NewOrderService(
 	}
 }
 
+// Create validates user and saves a new order.
 func (s *OrderService) Create(ctx context.Context, req *model.CreateOrderRequest) (*model.Order, error) {
 	if req.Product == "" || req.Amount <= 0 {
 		return nil, ErrInvalidInput
@@ -78,6 +87,7 @@ func (s *OrderService) Create(ctx context.Context, req *model.CreateOrderRequest
 	return order, nil
 }
 
+// GetByID returns an order by ID.
 func (s *OrderService) GetByID(ctx context.Context, id uuid.UUID) (*model.Order, error) {
 	order, err := s.repo.GetByID(ctx, id)
 	if err != nil {
@@ -89,6 +99,7 @@ func (s *OrderService) GetByID(ctx context.Context, id uuid.UUID) (*model.Order,
 	return order, nil
 }
 
+// List returns orders filtered by user.
 func (s *OrderService) List(ctx context.Context, userIDStr string) ([]*model.Order, error) {
 	var userID *uuid.UUID
 	if userIDStr != "" {
@@ -101,6 +112,7 @@ func (s *OrderService) List(ctx context.Context, userIDStr string) ([]*model.Ord
 	return s.repo.List(ctx, userID)
 }
 
+// Cancel cancels an order by ID.
 func (s *OrderService) Cancel(ctx context.Context, id uuid.UUID) error {
 	order, err := s.repo.GetByID(ctx, id)
 	if err != nil {

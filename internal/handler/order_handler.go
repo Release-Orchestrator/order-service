@@ -1,3 +1,4 @@
+// Package handler contains HTTP handlers for the order service.
 package handler
 
 import (
@@ -9,14 +10,17 @@ import (
 	"github.com/google/uuid"
 )
 
+// OrderHandler handles HTTP requests related to orders.
 type OrderHandler struct {
 	svc service.OrderServiceInterface
 }
 
+// NewOrderHandler returns a new OrderHandler.
 func NewOrderHandler(svc service.OrderServiceInterface) *OrderHandler {
 	return &OrderHandler{svc: svc}
 }
 
+// RegisterRoutes registers the order HTTP routes on the provided router group.
 func (h *OrderHandler) RegisterRoutes(r *gin.RouterGroup) {
 	orders := r.Group("/orders")
 	{
@@ -27,6 +31,7 @@ func (h *OrderHandler) RegisterRoutes(r *gin.RouterGroup) {
 	}
 }
 
+// Create handles POST /orders and creates a new order.
 func (h *OrderHandler) Create(c *gin.Context) {
 	var req model.CreateOrderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -43,6 +48,7 @@ func (h *OrderHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"success": true, "data": order})
 }
 
+// Get handles GET /orders/:id and returns an order by ID.
 func (h *OrderHandler) Get(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -59,6 +65,7 @@ func (h *OrderHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": order})
 }
 
+// List handles GET /orders and returns a list of orders.
 func (h *OrderHandler) List(c *gin.Context) {
 	userID := c.Query("user_id")
 
@@ -71,6 +78,7 @@ func (h *OrderHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": orders})
 }
 
+// Cancel handles DELETE /orders/:id and cancels an order.
 func (h *OrderHandler) Cancel(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -86,6 +94,7 @@ func (h *OrderHandler) Cancel(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// handleError maps service errors to HTTP responses.
 func (h *OrderHandler) handleError(c *gin.Context, err error) {
 	switch err {
 	case service.ErrOrderNotFound:

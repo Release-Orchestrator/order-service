@@ -16,7 +16,7 @@ import (
 )
 
 type mockService struct {
-	createFunc func(ctx context.Context, req *model.CreateOrderRequest) (*model.Order, error)
+	createFunc  func(ctx context.Context, req *model.CreateOrderRequest) (*model.Order, error)
 	getByIDFunc func(ctx context.Context, id uuid.UUID) (*model.Order, error)
 	listFunc    func(ctx context.Context, userID string) ([]*model.Order, error)
 	cancelFunc  func(ctx context.Context, id uuid.UUID) error

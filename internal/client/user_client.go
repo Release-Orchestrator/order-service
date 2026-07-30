@@ -1,3 +1,4 @@
+// Package client provides HTTP clients for external service dependencies.
 package client
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// UserServiceClient defines operations for communicating with the user service.
 type UserServiceClient interface {
 	ValidateUser(ctx context.Context, userID uuid.UUID) (bool, error)
 }
@@ -19,6 +21,7 @@ type userServiceClient struct {
 	http    *http.Client
 }
 
+// NewUserServiceClient creates a new UserServiceClient.
 func NewUserServiceClient(baseURL string) UserServiceClient {
 	return &userServiceClient{
 		baseURL: baseURL,
@@ -28,6 +31,7 @@ func NewUserServiceClient(baseURL string) UserServiceClient {
 	}
 }
 
+// ValidateUser checks if a user exists by ID.
 func (c *userServiceClient) ValidateUser(ctx context.Context, userID uuid.UUID) (bool, error) {
 	url := fmt.Sprintf("%s/internal/users/%s", c.baseURL, userID.String())
 
