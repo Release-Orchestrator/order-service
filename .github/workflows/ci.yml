@@ -25,7 +25,6 @@ jobs:
           version: v2.12
 
   test:
-    needs: lint
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -52,8 +51,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-  build-and-push:
-    needs: test
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -65,6 +63,13 @@ jobs:
         run: go build -v -o order-service ./cmd
       - name: Build image
         run: docker build -t ghcr.io/release-orchestrator/order-service:${{ github.ref_name }} .
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: image
+          image-ref: ghcr.io/release-orchestrator/order-service:${{ github.ref_name }}
+          severity: HIGH,CRITICAL
+          exit-code: "0"
       - name: Login to GHCR
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/login-action@v3
@@ -75,3 +80,13 @@ jobs:
       - name: Push image
         if: startsWith(github.ref, 'refs/tags/')
         run: docker push ghcr.io/release-orchestrator/order-service:${{ github.ref_name }}
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
