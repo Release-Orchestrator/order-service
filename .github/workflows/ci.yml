@@ -92,7 +92,7 @@ jobs:
           GH_TOKEN: ${{ secrets.MANIFEST_REPO_PAT }}
         run: |
           git clone --depth 1 https://x-access-token:${GH_TOKEN}@github.com/Release-Orchestrator/release-orchestrator.git /tmp/release-orchestrator
-          cd /tmp/release-orchestrator/k8s-manifests/${{ github.event.repository.name }}
+          cd /tmp/release-orchestrator/k8s-manifests/${{ github.event.repository.name }}/base
           kustomize edit set image ghcr.io/release-orchestrator/${{ github.event.repository.name }}=ghcr.io/release-orchestrator/${{ github.event.repository.name }}:${{ github.ref_name }}
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
